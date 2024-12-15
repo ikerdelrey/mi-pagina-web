@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jingle bell remix</title>
+    <style>
+        /* Estilos existentes, sin cambios */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #eaf8ff, #fff);
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            background-color: #c0392b;
+            color: white;
+            padding: 20px;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            border-bottom: 5px solid #e74c3c;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            position: relative;
+        }
+
+        .play-button {
+            background-color: #d35400;
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            background-color: #e67e22;
+        }
+
+        .countdown {
+            font-size: 2.5rem;
+            color: #d35400;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .karaoke-box {
+            width: 80%;
+            max-width: 700px;
+            background: linear-gradient(to bottom, #fdfefe, #f1f1f1);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            border: 5px solid #c0392b;
+            margin-top: 40px;
+            position: relative;
+            overflow: hidden;
+            display: none;
+            animation: slideIn 1s ease-out;
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateY(100px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        .karaoke-box.revealed {
+            display: block;
+        }
+
+        /* Copos de nieve */
+        .snow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10%;
+            animation: fall linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+
+        .snowflake:nth-child(1) { left: 10%; animation-duration: 8s; animation-delay: 0s; }
+        .snowflake:nth-child(2) { left: 20%; animation-duration: 6s; animation-delay: 1s; }
+        .snowflake:nth-child(3) { left: 30%; animation-duration: 9s; animation-delay: 2s; }
+        .snowflake:nth-child(4) { left: 40%; animation-duration: 7s; animation-delay: 3s; }
+        .snowflake:nth-child(5) { left: 50%; animation-duration: 5s; animation-delay: 4s; }
+        .snowflake:nth-child(6) { left: 60%; animation-duration: 6s; animation-delay: 5s; }
+        .snowflake:nth-child(7) { left: 70%; animation-duration: 8s; animation-delay: 6s; }
+        .snowflake:nth-child(8) { left: 80%; animation-duration: 7s; animation-delay: 7s; }
+
+        .snowflake img {
+            width: 40px;
+            animation: snowEffect 8s infinite linear;
+        }
+
+        @keyframes snowEffect {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Emojis en los bordes */
+        .emoji {
+            position: fixed;
+            font-size: 2.5rem;
+            z-index: 9;
+            visibility: hidden;
+        }
+
+        .top-left { top: 20px; left: 20px; }
+        .top-right { top: 20px; right: 20px; }
+        .bottom-left { bottom: 20px; left: 20px; }
+        .bottom-right { bottom: 20px; right: 20px; }
+        .left { top: 50%; left: 20px; transform: translateY(-50%); }
+        .right { top: 50%; right: 20px; transform: translateY(-50%); }
+        .top { top: 20px; left: 50%; transform: translateX(-50%); }
+        .bottom { bottom: 20px; left: 50%; transform: translateX(-50%); }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        .revealed {
+            visibility: visible;
+            animation: slideUp 0.5s ease-out forwards, fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            0% {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+ <button id="playButton">Play Video</button>
+
+
+<script>
+    // Obtener los elementos de la página
+    const playButton = document.getElementById('playButton');
+    const videoContainer = document.getElementById('videoContainer');
+    const videoPlayer = document.getElementById('videoPlayer');
+
+    // Enlace del video de YouTube (reemplaza con el ID del video real)
+    const videoUrl = "https://www.youtube.com/embed/VIDEO_ID?autoplay=1"; // Reemplaza VIDEO_ID con el ID del video
+
+    // Cuando se haga clic en el botón, mostrar el video
+    playButton.addEventListener('click', function() {
+        videoContainer.style.display = 'block'; // Mostrar el contenedor del video
+        videoPlayer.src = videoUrl; // Establecer el video de YouTube
+    });
+</script>
+
+
+
+    /* Estilo para el botón */
+    #playButton {
+        margin: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    #playButton:hover {
+        background-color: #45a049;
+    }
+    .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            position: relative;
+        }
+
+        /* Aquí está el estilo para el contenedor del video */
+        #videoContainer {
+            margin-top: 20px;
+            text-align: center;
+        }
+  iframe {
+            width: 80%;
+            max-width: 700px;
+            height: 400px;
+            border: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>Jingle bell remix</header>
+   <div class="container">
+        <!-- Aquí está el enlace al video -->
+        <div id="videoContainer">
+<iframe src="https://www.youtube.com/embed/8EJ5JRbu47Y" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+            
+        </div>
+
+    <div class="container">
+        <button class="play-button" onclick="startKaraoke()">Start Karaoke</button>
+        <p class="countdown" id="countdown"></p>
+
+
+        <div id="karaoke-box" class="karaoke-box">
+            <div id="lyrics">
+
+               <p class="hidden">Oh! Jingle bells, jingle bells,</p>
+                <p class="hidden">Christmas time is near!</p>
+                <p class="hidden">Oh! What fun it is to wrap</p>
+                <p class="hidden">Gifts that bring us cheer! Hey!</p>
+                <p class="hidden">Jingle bells, jingle bells,</p>
+                <p class="hidden">Presents everywhere,</p>
+                <p class="hidden">Oh! What fun it is to shop</p>
+                <p class="hidden">And still forget the prayer!</p>
+                <p class="hidden"><strong>Verse 1</strong></p>
+                <p class="hidden">Shopping all day long,</p>
+                <p class="hidden">Crowds are everywhere,</p>
+                <p class="hidden">Hoping I can find the gift</p>
+                <p class="hidden">That shows I really care!</p>
+                <p class="hidden">Lights are on the tree,</p>
+                <p class="hidden">But half of them won’t shine,</p>
+                <p class="hidden">Oh, Christmas chaos here,</p>
+                <p class="hidden">But everything’s just fine!</p>
+                <p class="hidden"><strong>Both</strong></p>
+                <p class="hidden">Oh! Jingle bells, jingle bells,</p>
+                <p class="hidden">Christmas time is near!</p>
+                <p class="hidden">Oh! What fun it is to wrap</p>
+                <p class="hidden">Gifts that bring us cheer! Hey!</p>
+                <p class="hidden">Jingle bells, jingle bells,</p>
+                <p class="hidden">Presents everywhere,</p>
+                <p class="hidden">Oh! What fun it is to shop</p>
+                <p class="hidden">And still forget the prayer!</p>
+ <p class="hidden"><strong>Verse 2</strong></p>
+    <p class="hidden">Shopping all day long,</p>
+    <p class="hidden">The presents are spread,</p>
+    <p class="hidden">People sing the songs,</p>
+    <p class="hidden">And everybody’s filled with cheer!</p>
+    <p class="hidden">Lights are shining bright,</p>
+    <p class="hidden">Trees are glowing high,</p>
+    <p class="hidden">Picking out a perfect gift,</p>
+    <p class="hidden">To make our spirits fly!</p>
+
+    <p class="hidden"><strong>Both</strong></p>
+    <p class="hidden">Oh! Jingle bells, jingle bells,</p>
+    <p class="hidden">Christmas time is near!</p>
+    <p class="hidden">Oh! What fun it is to wrap</p>
+    <p class="hidden">Gifts that bring us cheer! Hey!</p>
+    <p class="hidden">Jingle bells, jingle bells,</p>
+    <p class="hidden">Presents everywhere,</p>
+    <p class="hidden">Oh! What fun it is to shop</p>
+    <p class="hidden">And still forget the prayer!</p>
+<p class="hidden"><strong>Both</strong></p>
+    <p class="hidden">Oh! Jingle bells, jingle bells,</p>
+    <p class="hidden">Christmas time is near!</p>
+    <p class="hidden">Oh! What fun it is to wrap</p>
+    <p class="hidden">Gifts that bring us cheer! Hey!</p>
+    <p class="hidden">Jingle bells, jingle bells,</p>
+    <p class="hidden">Presents everywhere,</p>
+    <p class="hidden">Oh! What fun it is to shop</p>
+    <p class="hidden">And still forget the prayer!</p>
+            </div>
+
+        </div>
+    </div>
+
+   
+     
+    <div class="snow" id="snowContainer"></div>
+
+    <script>
+        // Función para iniciar el karaoke
+        let count = 10;
+        let countdownInterval;
+        let audio = document.getElementById('audioPlayer');
+        let lyrics = document.querySelectorAll('#lyrics p');
+        let currentLyricIndex = 0;
+
+        function startKaraoke() {
+            document.querySelector('.play-button').style.display = 'none';
+            document.getElementById('karaoke-box').classList.add('revealed');
+            startCountdown();
+            audio.play();
+        }
+
+        function startCountdown() {
+            countdownInterval = setInterval(function() {
+                if (count === 0) {
+                    clearInterval(countdownInterval);
+                    displayLyrics();
+                } else {
+                    document.getElementById('countdown').innerText = count;
+                    count--;
+                }
+            }, 1000);
+        }
+
+        function displayLyrics() {
+            lyrics.forEach((lyric, index) => {
+                setTimeout(() => {
+                    lyric.classList.remove('hidden');
+                    lyric.classList.add('revealed');
+                }, index * 2000);
+            });
+        }
+    </script>
+</body>
+</html>
